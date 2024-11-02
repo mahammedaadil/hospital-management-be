@@ -1,24 +1,23 @@
-import express from "express";
-import {config} from "dotenv"
-import cors from "cors"
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import { configDotenv } from "dotenv";
+import express from "express";
 import fileUpload from "express-fileupload";
 import { dbConnection } from "./database/dbConnection.js";
-import messageRouter from "./router/messageRouter.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
+import appointmentRouter from "./router/appointmentRouter.js";
+import messageRouter from "./router/messageRouter.js";
 import userRouter from "./router/userRouter.js";
-import  appointmentRouter from "./router/appointmentRouter.js";
-
+configDotenv()
 
 const app= express();
 
-config({path:"./config/config.env"})
+console.log(process.env.FRONTEND_URL,process.env.DASHBOARD_URL);
 
 app.use(cors({
     origin:[process.env.FRONTEND_URL,process.env.DASHBOARD_URL],
     methods:["GET","POST","PUT","DELETE"],
     credentials:true,
-
 })
 );
 

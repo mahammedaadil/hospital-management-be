@@ -1,8 +1,10 @@
+import bcrypt from "bcrypt";
+import { configDotenv } from "dotenv";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import validator from "validator";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
+configDotenv()
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,

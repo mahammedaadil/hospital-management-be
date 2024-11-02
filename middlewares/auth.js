@@ -1,7 +1,9 @@
+import { configDotenv } from "dotenv";
+import jwt from "jsonwebtoken";
 import { User } from "../models/userSchema.js";
 import { catchAsyncErrors } from "./catchAsyncErrors.js";
 import ErrorHandler from "./errorMiddleware.js";
-import jwt from "jsonwebtoken";
+configDotenv()
 
 // Middleware to authenticate dashboard users
 export const isAdminAuthenticated = catchAsyncErrors(
