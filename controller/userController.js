@@ -1,106 +1,101 @@
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
-import {User} from "../models/userSchema.js";
+import { User } from "../models/userSchema.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
 
-
-
-
-
 //Patient Registration
 
-export const patientRegister= catchAsyncErrors(async(req,res,next)=>{
-    const{
-        firstName,
-        lastName,
-        email,
-        phone,
-        password,
-        confirmPassword,
-        gender,
-        dob,
-        role,
-    } =req.body;
+export const patientRegister = catchAsyncErrors(async (req, res, next) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    gender,
+    dob,
+    role,
+  } = req.body;
 
-    if(
-        !firstName ||
-        !lastName ||
-        !email ||
-        !phone ||
-        !password ||
-        !confirmPassword ||
-        !gender ||
-        !dob ||
-        !role 
-    )
-    {
-        return next(new ErrorHandler("Please Fill Full Form",400));
-    }
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phone ||
+    !password ||
+    !confirmPassword ||
+    !gender ||
+    !dob ||
+    !role
+  ) {
+    return next(new ErrorHandler("Please Fill Full Form", 400));
+  }
 
-    let user=await User.findOne({email});
+  let user = await User.findOne({ email });
 
-    if (password !== confirmPassword) {
-      return next(
-        new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
-      );
-    }
-    
-    if(user){
+  if (password !== confirmPassword) {
+    return next(
+      new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
+    );
+  }
 
-       return next(new ErrorHandler("User Already Registered!",400));
+  if (user) {
+    return next(new ErrorHandler("User Already Registered!", 400));
+  }
 
-    }
-
-    user=await User.create({
-        firstName,
-        lastName,
-        email,
-        phone,
-        password,
-        confirmPassword,
-        gender,
-        dob,
-        role,
-    });
-    
-
-    generateToken(user,"User Registered!",200,res)
-
-});
-
-//Patient Login 
-
-export const login = catchAsyncErrors(async (req, res, next) => {
-    const { email, password, role } = req.body;
-    if (!email || !password || !role) {
-      return next(new ErrorHandler("Please Fill Full Form!", 400));
-    }
-    
- 
-    const user = await User.findOne({ email }).select("+password");
-    if (!user) {
-      return next(new ErrorHandler("Invalid Email Or Password!", 400));
-    }
-  
-
-    const isPasswordMatch = await user.comparePassword(password);
-    if (!isPasswordMatch) {
-      return next(new ErrorHandler("Invalid Email Or Password!", 400));
-    }
-    if (role !== user.role) {
-      return next(new ErrorHandler(`User Not Found With This Role!`, 400));
-    }
-   
-    generateToken(user,"User Login SuccessFully!",200,res)
-
+  user = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    gender,
+    dob,
+    role,
   });
 
+  generateToken(user, "User Registered!", 200, res);
+});
+
+//Patient Login
+
+export const login = catchAsyncErrors(async (req, res, next) => {
+  const { email, password, role } = req.body;
+  if (!email || !password || !role) {
+    return next(new ErrorHandler("Please Fill Full Form!", 400));
+  }
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
+  }
+
+  const isPasswordMatch = await user.comparePassword(password);
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
+  }
+  if (role !== user.role) {
+    return next(new ErrorHandler(`User Not Found With This Role!`, 400));
+  }
+
+  generateToken(user, "User Login SuccessFully!", 200, res);
+});
 
 //Admin Registration
 export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
-  const { firstName, lastName, email, phone, dob, gender, password ,confirmPassword} =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    dob,
+    gender,
+    password,
+    confirmPassword,
+  } = req.body;
   if (
     !firstName ||
     !lastName ||
@@ -116,7 +111,9 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
 
   const isRegistered = await User.findOne({ email });
   if (isRegistered) {
-    return next(new ErrorHandler(`${isRegistered.role} With This Email Already Exists!`));
+    return next(
+      new ErrorHandler(`${isRegistered.role} With This Email Already Exists!`)
+    );
   }
 
   if (password !== confirmPassword) {
@@ -134,7 +131,7 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
     gender,
     password,
     confirmPassword,
-    
+
     role: "Admin",
   });
   res.status(200).json({
@@ -143,7 +140,6 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
     admin,
   });
 });
-
 
 //Doctor Registration & Getting Doctor Details
 
@@ -182,7 +178,7 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
   const isRegistered = await User.findOne({ email });
-  
+
   if (password !== confirmPassword) {
     return next(
       new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
@@ -229,9 +225,6 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
-
-
 export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
   const doctors = await User.find({ role: "Doctor" });
   res.status(200).json({
@@ -247,8 +240,6 @@ export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
     user,
   });
 });
-
-
 
 // Logout function for  admin
 export const logoutAdmin = catchAsyncErrors(async (req, res, next) => {
@@ -279,9 +270,7 @@ export const logoutPatient = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-
 //get doctor
-
 
 // Get Doctor by ID
 export const getDoctorById = catchAsyncErrors(async (req, res, next) => {
@@ -309,7 +298,6 @@ const isValidObjectId = (id) => {
   return /^[0-9a-fA-F]{24}$/.test(id);
 };
 
-
 //delete doctor
 
 // Delete Doctor by ID
@@ -336,29 +324,19 @@ export const deleteDoctor = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
 //update doctor
 
 export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
 
-  const {
-    firstName,
-    lastName,
-    email,
-    phone,
-    dob,
-    gender,
-    doctorDepartment,
-  } = req.body;
-
+  const { firstName, lastName, email, phone, dob, gender, doctorDepartment } =
+    req.body;
 
   let doctor = await User.findById(id);
   if (!doctor || doctor.role !== "Doctor") {
     return next(new ErrorHandler("Doctor Not Found!", 404));
   }
 
- 
   doctor.firstName = firstName || doctor.firstName;
   doctor.lastName = lastName || doctor.lastName;
   doctor.email = email || doctor.email;
@@ -367,7 +345,6 @@ export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
   doctor.gender = gender || doctor.gender;
   doctor.doctorDepartment = doctorDepartment || doctor.doctorDepartment;
 
- 
   await doctor.save();
 
   res.status(200).json({
@@ -376,11 +353,3 @@ export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
     doctor,
   });
 });
-
-
-
-
-
-
-
-

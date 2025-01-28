@@ -8,37 +8,39 @@ import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import appointmentRouter from "./router/appointmentRouter.js";
 import messageRouter from "./router/messageRouter.js";
 import userRouter from "./router/userRouter.js";
-configDotenv()
+configDotenv();
 
-const app= express();
+const app = express();
 
+console.log(process.env.FRONTEND_URL, process.env.DASHBOARD_URL);
 
-console.log(process.env.FRONTEND_URL,process.env.DASHBOARD_URL);
-
-app.use(cors({
-    origin:[process.env.FRONTEND_URL,process.env.DASHBOARD_URL],
-    methods:["GET","POST","PUT","DELETE"],
-    credentials:true,
-})
+app.use(
+  cors({
+    origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
 );
+
+// doing for testing purpose thats why allow all origin
+
+//app.use(cors());
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.urlencoded({extended:true}));
-app.use(fileUpload({
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  fileUpload({
     useTempFiles: true,
-    tempFileDir:"/tmp/",
-
-})
+    tempFileDir: "/tmp/",
+  })
 );
 
-app.use("/api/v1/message",messageRouter);
-app.use("/api/v1/user",userRouter);
-app.use("/api/v1/appointment",appointmentRouter);
+app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/appointment", appointmentRouter);
 
 dbConnection();
-
-
 
 app.use(errorMiddleware);
 

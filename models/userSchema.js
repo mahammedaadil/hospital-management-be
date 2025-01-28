@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import validator from "validator";
 
-configDotenv()
+configDotenv();
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -47,12 +47,16 @@ const userSchema = new mongoose.Schema({
     required: [true, "User Role Required!"],
     enum: ["Patient", "Doctor", "Admin"],
   },
-  doctorDepartment:{
+  doctorDepartment: {
     type: String,
   },
   docAvatar: {
     public_id: String,
     url: String,
+  },
+  otp: {
+    type: String,
+    default: "",
   },
 });
 
