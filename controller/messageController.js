@@ -4,6 +4,7 @@ import { Message } from "../models/messageSchema.js";
 import mongoose from "mongoose";
 
 
+
 //ToSendMessages
 export const sendMessage = catchAsyncErrors(async (req,res,next) =>{
     const {firstName,lastName,email,phone,message}=req.body;
@@ -48,8 +49,6 @@ export const deleteMessage = catchAsyncErrors(async (req, res, next) => {
     message: "Message deleted successfully!",
   });
 });
-
-
 
 
 
