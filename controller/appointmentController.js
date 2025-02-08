@@ -154,6 +154,7 @@ export const deleteAppointment = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+
 // Get Appointments for the logged-in Patient
 export const getPatientAppointments = catchAsyncErrors(async (req, res) => {
   const patientId = req.user._id; // Get the ID of the logged-in patient
@@ -172,4 +173,7 @@ export const getPatientAppointments = catchAsyncErrors(async (req, res) => {
     success: true,
     appointments,
   });
+  
 });
+
+

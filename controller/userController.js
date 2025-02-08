@@ -84,6 +84,7 @@ export const login = catchAsyncErrors(async (req, res, next) => {
   generateToken(user, "User Login SuccessFully!", 200, res);
 });
 
+
 //Admin Registration
 export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -267,6 +268,21 @@ export const logoutPatient = catchAsyncErrors(async (req, res, next) => {
     .json({
       success: true,
       message: "Patient Logged Out Successfully.",
+    });
+});
+
+
+// Logout function for  admin
+export const logoutDoctor= catchAsyncErrors(async (req, res, next) => {
+  res
+    .status(200)
+    .cookie("doctorToken", "", {
+      httpOnly: true,
+      expires: new Date(Date.now()),
+    })
+    .json({
+      success: true,
+      message: "Doctor Logged Out Successfully.",
     });
 });
 
