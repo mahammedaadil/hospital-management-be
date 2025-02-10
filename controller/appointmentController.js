@@ -176,4 +176,19 @@ export const getPatientAppointments = catchAsyncErrors(async (req, res) => {
   
 });
 
+// Get Appointments for the logged-in Doctor
+export const getDoctorAppointments = catchAsyncErrors(async (req, res, next) => {
+  const doctorId = req.user._id; // Logged-in doctor ID
+
+  if (req.user.role !== "Doctor") {
+    return next(new ErrorHandler("Access denied! Only doctors can view their appointments.", 403));
+  }
+
+  const appointments = await Appointment.find({ doctorId });
+
+  res.status(200).json({
+    success: true,
+    appointments,
+  });
+});
 
