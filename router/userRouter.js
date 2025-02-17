@@ -11,7 +11,7 @@ import {
   deleteDoctor,
   updateDoctor,
   getDoctorById,
-  getPatientById
+  
 } from "../controller/userController.js";
 import {
   isAdminAuthenticated,
@@ -41,6 +41,6 @@ router.get("/doctor/:id", isAdminAuthenticated, getDoctorById);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPasswordController);
 router.post("/verify-otp", verifiedOtpController);
-router.get("/user/info/:id", isAuthorized("Admin", "Doctor", "Patient"), getPatientById);
+
 
 export default router;

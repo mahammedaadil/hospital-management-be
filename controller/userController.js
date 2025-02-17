@@ -3,7 +3,7 @@ import { User } from "../models/userSchema.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
-import mongoose from "mongoose";
+
 
 //Patient Registration
 
@@ -370,28 +370,4 @@ export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
     doctor,
   });
 });
-
-// Get User Personal Information
-// Get Patient by ID
-export const getPatientById = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req.params;
-
-  // Validate ObjectId
-  if (!isValidObjectId(id)) {
-    return next(new ErrorHandler("Invalid Patient ID!", 400));
-  }
-
-  // Find the patient by ID
-  const patient = await User.findById(id);
-  if (!patient || patient.role !== "Patient") {
-    return next(new ErrorHandler("Patient Not Found!", 404));
-  }
-
-  // Return patient data
-  res.status(200).json({
-    success: true,
-    user: patient,  // Changed from 'patient' to 'user' for consistency
-  });
-});
-
 
