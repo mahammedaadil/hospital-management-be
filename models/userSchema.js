@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import validator from "validator";
 
 configDotenv();
+
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -49,7 +50,59 @@ const userSchema = new mongoose.Schema({
   },
   doctorDepartment: {
     type: String,
+    required: [true, "Doctor's Department Is Required!"],
+    enum: [
+      "Pediatrics",
+      "Orthopedics",
+      "Cardiology",
+      "Neurology",
+      "Oncology",
+      "Radiology",
+      "Physical Therapy",
+      "Dermatology",
+      "ENT",
+    ],
   },
+  doctorFees: {
+    type: Number,
+    required: [true, "Doctor's Fees Are Required!"],
+  },
+  joiningDate: {
+    type: Date,
+    required: [true, "Joining Date Is Required!"],
+  },
+  resignationDate: {
+    type: Date,
+    required: false,
+  },
+  
+  doctorAvailability: [
+    {
+      day: {
+        type: String,
+        required: true,
+        enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      },
+      timings: {
+        type: String,
+        required: true,
+        enum: [
+          '09:00-09:30', '09:30-10:00',
+          '10:00-10:30', '10:30-11:00',
+          '11:00-11:30', '11:30-12:00',
+          '12:00-12:30', '12:30-01:00',
+          '14:00-14:30', '14:30-15:00',
+          '15:00-15:30', '15:30-16:00',
+          '16:00-16:30', '16:30-17:00',
+          '17:00-17:30', '17:30-18:00',
+          '18:00-18:30', '18:30-19:00',
+          '19:00-19:30', '19:30-20:00',
+        ]
+        
+    
+      },
+    },
+  ],
   docAvatar: {
     public_id: String,
     url: String,
@@ -60,6 +113,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// Hash password before saving if modified
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
@@ -67,10 +121,12 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
+// Compare entered password with stored hashed password
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// Generate JWT token for user
 userSchema.methods.generateJsonWebToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
     expiresIn: process.env.JWT_EXPIRES,

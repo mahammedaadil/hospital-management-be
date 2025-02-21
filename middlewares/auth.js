@@ -54,6 +54,9 @@ export const isPatientAuthenticated = [
   }
 ];
 
+
+
+
 // Doctor authentication
 export const isDoctorAuthenticated = [
   authenticateUser,

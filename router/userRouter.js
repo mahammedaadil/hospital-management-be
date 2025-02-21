@@ -30,7 +30,7 @@ router.post("/login", login);
 router.post("/admin/addnew", isAdminAuthenticated, addNewAdmin);
 router.get("/doctors", getAllDoctors);
 router.get("/admin/me",isAdminAuthenticated,getUserDetails);
-router.get("/patient/me",isPatientAuthenticated,getUserDetails);
+router.get("/patient/me",isAuthorized("Patient"),getUserDetails);
 router.get("/doctor/me",isDoctorAuthenticated,getUserDetails);
 router.get("/admin/logout",isAdminAuthenticated,logoutAdmin);
 router.get("/patient/logout",isPatientAuthenticated, logoutPatient);

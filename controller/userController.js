@@ -144,16 +144,21 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
 });
 
 //Doctor Registration & Getting Doctor Details
-
 export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
+  // Check if avatar is uploaded in the request
   if (!req.files || Object.keys(req.files).length === 0) {
     return next(new ErrorHandler("Doctor Avatar Required!", 400));
   }
-  const { docAvatar } = req.files;
+
+  const { docAvatar } = req.files; // Get the avatar file
   const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+  
+  // Check if the uploaded file is an allowed format
   if (!allowedFormats.includes(docAvatar.mimetype)) {
     return next(new ErrorHandler("File Format Not Supported!", 400));
   }
+
+  // Destructure all form fields
   const {
     firstName,
     lastName,
@@ -164,7 +169,13 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     password,
     confirmPassword,
     doctorDepartment,
+    doctorFees,
+    joiningDate,
+    resignationDate,
+    doctorAvailability,
   } = req.body;
+
+  // Validate that all necessary fields are provided
   if (
     !firstName ||
     !lastName ||
@@ -175,35 +186,36 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     !password ||
     !confirmPassword ||
     !doctorDepartment ||
-    !docAvatar
+    !doctorFees ||
+    !joiningDate ||
+    !doctorAvailability
   ) {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
+
+  // Check if the doctor already exists in the database
   const isRegistered = await User.findOne({ email });
 
-  if (password !== confirmPassword) {
-    return next(
-      new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
-    );
+  if (isRegistered) {
+    return next(new ErrorHandler("Doctor With This Email Already Exists!", 400));
   }
 
-  if (isRegistered) {
-    return next(
-      new ErrorHandler("Doctor With This Email Already Exists!", 400)
-    );
+  // Validate password and confirm password
+  if (password !== confirmPassword) {
+    return next(new ErrorHandler("Password & Confirm Password Do Not Match!", 400));
   }
-  const cloudinaryResponse = await cloudinary.uploader.upload(
-    docAvatar.tempFilePath
-  );
+
+  // Upload the avatar to Cloudinary
+  const cloudinaryResponse = await cloudinary.uploader.upload(docAvatar.tempFilePath, {
+    folder: "doctors_avatars", // Optional: specify a folder in Cloudinary
+  });
+
   if (!cloudinaryResponse || cloudinaryResponse.error) {
-    console.error(
-      "Cloudinary Error:",
-      cloudinaryResponse.error || "Unknown Cloudinary error"
-    );
-    return next(
-      new ErrorHandler("Failed To Upload Doctor Avatar To Cloudinary", 500)
-    );
+    console.error("Cloudinary Error:", cloudinaryResponse.error || "Unknown Cloudinary error");
+    return next(new ErrorHandler("Failed To Upload Doctor Avatar To Cloudinary", 500));
   }
+
+  // Create a new doctor record in the User model
   const doctor = await User.create({
     firstName,
     lastName,
@@ -211,21 +223,27 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     phone,
     dob,
     gender,
-    password,
+    password, // Ensure you hash the password before saving
     confirmPassword,
-    role: "Doctor",
+    role: "Doctor", // Assign the role as "Doctor"
     doctorDepartment,
+    doctorFees,
+    joiningDate,
+    resignationDate, // Resignation Date is optional
+    doctorAvailability: JSON.parse(doctorAvailability), // Ensure this is an array of availability
     docAvatar: {
       public_id: cloudinaryResponse.public_id,
       url: cloudinaryResponse.secure_url,
     },
   });
+
   res.status(200).json({
     success: true,
     message: "New Doctor Registered",
     doctor,
   });
 });
+
 
 export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
   const doctors = await User.find({ role: "Doctor" });
@@ -236,12 +254,14 @@ export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
+  console.log('User Details:', req.user); // Debugging
   const user = req.user;
   res.status(200).json({
     success: true,
     user,
   });
 });
+
 
 // Logout function for  admin
 export const logoutAdmin = catchAsyncErrors(async (req, res, next) => {
@@ -370,4 +390,5 @@ export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
     doctor,
   });
 });
+
 
