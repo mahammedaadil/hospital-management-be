@@ -145,20 +145,17 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
 
 //Doctor Registration & Getting Doctor Details
 export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
-  // Check if avatar is uploaded in the request
   if (!req.files || Object.keys(req.files).length === 0) {
     return next(new ErrorHandler("Doctor Avatar Required!", 400));
   }
 
-  const { docAvatar } = req.files; // Get the avatar file
+  const { docAvatar } = req.files;
   const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
-  
-  // Check if the uploaded file is an allowed format
+
   if (!allowedFormats.includes(docAvatar.mimetype)) {
     return next(new ErrorHandler("File Format Not Supported!", 400));
   }
 
-  // Destructure all form fields
   const {
     firstName,
     lastName,
@@ -175,7 +172,6 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     doctorAvailability,
   } = req.body;
 
-  // Validate that all necessary fields are provided
   if (
     !firstName ||
     !lastName ||
@@ -193,21 +189,18 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
 
-  // Check if the doctor already exists in the database
   const isRegistered = await User.findOne({ email });
 
   if (isRegistered) {
     return next(new ErrorHandler("Doctor With This Email Already Exists!", 400));
   }
 
-  // Validate password and confirm password
   if (password !== confirmPassword) {
     return next(new ErrorHandler("Password & Confirm Password Do Not Match!", 400));
   }
 
-  // Upload the avatar to Cloudinary
   const cloudinaryResponse = await cloudinary.uploader.upload(docAvatar.tempFilePath, {
-    folder: "doctors_avatars", // Optional: specify a folder in Cloudinary
+    folder: "doctors_avatars",
   });
 
   if (!cloudinaryResponse || cloudinaryResponse.error) {
@@ -223,14 +216,13 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     phone,
     dob,
     gender,
-    password, // Ensure you hash the password before saving
-    confirmPassword,
-    role: "Doctor", // Assign the role as "Doctor"
+    password,
+    role: "Doctor",
     doctorDepartment,
     doctorFees,
     joiningDate,
-    resignationDate, // Resignation Date is optional
-    doctorAvailability: JSON.parse(doctorAvailability), // Ensure this is an array of availability
+    resignationDate,
+    doctorAvailability: JSON.parse(doctorAvailability),
     docAvatar: {
       public_id: cloudinaryResponse.public_id,
       url: cloudinaryResponse.secure_url,
@@ -243,6 +235,7 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
     doctor,
   });
 });
+
 
 
 export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
@@ -313,12 +306,12 @@ export const logoutDoctor= catchAsyncErrors(async (req, res, next) => {
 export const getDoctorById = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
 
-  // Validate ObjectId
+
   if (!isValidObjectId(id)) {
     return next(new ErrorHandler("Invalid Doctor ID!", 400));
   }
 
-  // Find the doctor by ID
+
   const doctor = await User.findById(id);
   if (!doctor || doctor.role !== "Doctor") {
     return next(new ErrorHandler("Doctor Not Found!", 404));
@@ -330,29 +323,27 @@ export const getDoctorById = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// Function to validate ObjectId
+
 const isValidObjectId = (id) => {
   return /^[0-9a-fA-F]{24}$/.test(id);
 };
 
 //delete doctor
 
-// Delete Doctor by ID
+
 export const deleteDoctor = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
 
-  // Find the doctor by ID
   const doctor = await User.findById(id);
   if (!doctor || doctor.role !== "Doctor") {
     return next(new ErrorHandler("Doctor Not Found!", 404));
   }
 
-  // If the doctor has an avatar, delete it from Cloudinary
+  
   if (doctor.docAvatar && doctor.docAvatar.public_id) {
     await cloudinary.uploader.destroy(doctor.docAvatar.public_id);
   }
 
-  // Delete the doctor from the database
   await User.findByIdAndDelete(id);
 
   res.status(200).json({
@@ -366,8 +357,19 @@ export const deleteDoctor = catchAsyncErrors(async (req, res, next) => {
 export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
 
-  const { firstName, lastName, email, phone, dob, gender, doctorDepartment } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    dob,
+    gender,
+    doctorDepartment,
+    doctorFees,
+    joiningDate,
+    resignationDate,
+    doctorAvailability,
+  } = req.body;
 
   let doctor = await User.findById(id);
   if (!doctor || doctor.role !== "Doctor") {
@@ -381,6 +383,12 @@ export const updateDoctor = catchAsyncErrors(async (req, res, next) => {
   doctor.dob = dob || doctor.dob;
   doctor.gender = gender || doctor.gender;
   doctor.doctorDepartment = doctorDepartment || doctor.doctorDepartment;
+  doctor.doctorFees = doctorFees || doctor.doctorFees;
+  doctor.joiningDate = joiningDate || doctor.joiningDate;
+  doctor.resignationDate = resignationDate || doctor.resignationDate;
+  doctor.doctorAvailability = doctorAvailability 
+    ? JSON.parse(doctorAvailability) 
+    : doctor.doctorAvailability;
 
   await doctor.save();
 

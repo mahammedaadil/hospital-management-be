@@ -23,7 +23,6 @@ const appointmentSchema = new mongoose.Schema({
     minLength: [11, "Phone Number Must Contain Exact 11 Digits!"],
     maxLength: [11, "Phone Number Must Contain Exact 11 Digits!"],
   },
-  
   dob: {
     type: Date,
     required: [true, "DOB Is Required!"],
@@ -70,10 +69,9 @@ const appointmentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Pending", "Accepted", "Rejected"],
+    enum: ["Accepted", "Rejected", "Pending"],
     default: "Pending",
   },
-
   timeSlot: {
     type: String,
     required: [true, "Time Slot is required!"],
@@ -90,9 +88,15 @@ const appointmentSchema = new mongoose.Schema({
       '19:00-19:30', '19:30-20:00',
     ],
   },
-  
+  tokenNumber: {
+    type: Number,
+    required: true,
+  },
+  present: {
+    type: String,
+    enum: ["Yes", "No"],
+    default: "No", // Set the default value to "No" if required
+  },
 });
-
-
 
 export const Appointment = mongoose.model("Appointment", appointmentSchema);
