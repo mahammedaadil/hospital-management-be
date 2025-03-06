@@ -206,43 +206,30 @@ export const getDoctors = async (req, res) => {
   }
 };
 
-//get appoint
 
-
-export const getAppointmentsForToday = async (req, res) => {
-  const { doctorId } = req.params; // Ensure the correct parameter is passed in the request
-  const today = new Date().toISOString().split("T")[0]; // Get today's date
+export const rescheduleAppointment = async (req, res) => {
+  const { appointmentId } = req.params;  // Get appointment ID from URL parameters
+  const { appointment_date, timeSlot } = req.body;  // Get new date and time slot from the request body
 
   try {
-    const appointments = await Appointment.find({
-      doctorId,
-      appointment_date: { $gte: new Date(today), $lt: new Date(new Date(today).setDate(new Date(today).getDate() + 1)) }
-    })
-      .populate("doctorId", "firstName lastName")  // Populating doctor details
-      .populate("patientId", "firstName lastName"); // Populating patient details
+    // Find the appointment by its ID
+    const appointment = await Appointment.findById(appointmentId);
 
-    if (!appointments || appointments.length === 0) {
-      return res.status(404).json({ message: "No appointments found for today" });
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found." });
     }
 
-    res.status(200).json(appointments);
+    // Update the appointment details (date and timeSlot)
+    appointment.appointment_date = new Date(appointment_date);  // Ensure it's a date object
+    appointment.timeSlot = timeSlot;
+
+    // Save the updated appointment
+    await appointment.save();
+
+    // Return a success response
+    return res.status(200).json({ message: "Appointment rescheduled successfully.", appointment });
   } catch (error) {
-    console.error("Error fetching appointments:", error);
-    res.status(500).json({ message: "Error fetching appointments" });
-  }
-};
-//reschedule 
-export const rescheduleAppointments = async (req, res) => {
-  const { doctorId, newDate, appointments } = req.body;
-  try {
-    // Ensure that all appointments are updated to the new date
-    await Promise.all(
-      appointments.map(async (appointment) => {
-        await Appointment.findByIdAndUpdate(appointment._id, { date: newDate });
-      })
-    );
-    res.status(200).json({ message: "Appointments rescheduled successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to reschedule appointments" });
+    console.error(error);
+    return res.status(500).json({ message: "Failed to reschedule appointment. Please try again later." });
   }
 };

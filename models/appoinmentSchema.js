@@ -95,7 +95,7 @@ const appointmentSchema = new mongoose.Schema({
   present: {
     type: String,
     enum: ["Yes", "No"],
-    default: "No", // Set the default value to "No" if required
+    default: "No", 
   },
 });
 
