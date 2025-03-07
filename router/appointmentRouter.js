@@ -11,7 +11,7 @@ router.get("/getpatient/:id", isPatientAuthenticated, getPatientAppointments);
 // Doctor Routes
 router.get("/doctor", isAuthorized("Admin", "Doctor"),isDoctorAuthenticated, getDoctorAppointments); 
 router.get("/doctors", isAuthorized("Admin", "Doctor"),getDoctors);
-router.put("/appointment/reschedule/:appointmentId", isAuthorized("Admin", "Doctor"), rescheduleAppointment);
+router.put("/reschedule/:appointmentId", isAuthorized("Admin", "Doctor"), rescheduleAppointment);
 
 
 // Admin & Doctor Routes

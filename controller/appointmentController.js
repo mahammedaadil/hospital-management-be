@@ -208,28 +208,25 @@ export const getDoctors = async (req, res) => {
 
 
 export const rescheduleAppointment = async (req, res) => {
-  const { appointmentId } = req.params;  // Get appointment ID from URL parameters
-  const { appointment_date, timeSlot } = req.body;  // Get new date and time slot from the request body
+  const { appointmentId } = req.params;
+  const { appointment_date, timeSlot } = req.body;
+
 
   try {
-    // Find the appointment by its ID
     const appointment = await Appointment.findById(appointmentId);
 
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found." });
     }
 
-    // Update the appointment details (date and timeSlot)
-    appointment.appointment_date = new Date(appointment_date);  // Ensure it's a date object
+    appointment.appointment_date = new Date(appointment_date); // Convert to Date object
     appointment.timeSlot = timeSlot;
 
-    // Save the updated appointment
     await appointment.save();
 
-    // Return a success response
     return res.status(200).json({ message: "Appointment rescheduled successfully.", appointment });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Failed to reschedule appointment. Please try again later." });
+    console.error("Reschedule Error:", error);
+    return res.status(500).json({ message: "Failed to reschedule appointment.", error });
   }
 };
