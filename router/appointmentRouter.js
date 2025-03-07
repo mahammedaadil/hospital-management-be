@@ -9,13 +9,14 @@ router.post("/post", isPatientAuthenticated, postAppointment);
 router.get("/getpatient/:id", isPatientAuthenticated, getPatientAppointments); 
 
 // Doctor Routes
-router.get("/doctor", isAuthorized("Admin", "Doctor"),isDoctorAuthenticated, getDoctorAppointments); 
-router.get("/doctors", isAuthorized("Admin", "Doctor"),getDoctors);
-router.put("/reschedule/:appointmentId", isAuthorized("Admin", "Doctor"), rescheduleAppointment);
+
+router.put("/reschedule/:appointmentId", isDoctorAuthenticated, rescheduleAppointment);
+router.get("/doctor", isDoctorAuthenticated, getDoctorAppointments); 
 
 
 // Admin & Doctor Routes
 
+router.get("/doctors", isAuthorized("Admin", "Doctor"),getDoctors);
 router.get("/getall", isAuthorized("Admin", "Doctor"), getAllAppointments); 
 router.put("/update/:id", isAuthorized("Admin", "Doctor"), updateAppointmentStatus); 
 router.delete("/delete/:id", isAuthorized("Admin", "Doctor"), deleteAppointment); 
