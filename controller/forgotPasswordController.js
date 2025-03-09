@@ -3,6 +3,8 @@
     import { User } from "../models/userSchema.js";
     import nodemailer from "nodemailer";
     import crypto from "crypto";
+    import { configDotenv } from "dotenv";
+    configDotenv();
     
     // Nodemailer configuration with SMTP
     const transporter = nodemailer.createTransport({
@@ -10,8 +12,8 @@
       port: 587,
       secure: false, // true for 465, false for 587
       auth: {
-        user: "adilchoice30@gmail.com", // Replace with your email
-        pass: "yafxzrcpnnriprbm", // Use an App Password, NOT your Gmail password
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS,
       },
     });
     

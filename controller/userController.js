@@ -3,49 +3,58 @@ import { User } from "../models/userSchema.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
+// Email transporter configuration (using Gmail as an example)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
-//Patient Registration
+// Function to generate a random OTP
+const generateOTP = () => {
+  return crypto.randomInt(100000, 999999).toString();
+};
 
+// Function to send OTP email
+const sendOTPEmail = async (email, otp) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your OTP Code for Registration',
+    text: `Your OTP for registration is: ${otp}`
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+// Modified patient registration function
 export const patientRegister = catchAsyncErrors(async (req, res, next) => {
-  const {
-    firstName,
-    lastName,
-    email,
-    phone,
-    password,
-    confirmPassword,
-    gender,
-    dob,
-    role,
-  } = req.body;
+  const { firstName, lastName, email, phone, password, confirmPassword, gender, dob, role } = req.body;
 
-  if (
-    !firstName ||
-    !lastName ||
-    !email ||
-    !phone ||
-    !password ||
-    !confirmPassword ||
-    !gender ||
-    !dob ||
-    !role
-  ) {
+  if (!firstName || !lastName || !email || !phone || !password || !confirmPassword || !gender || !dob || !role) {
     return next(new ErrorHandler("Please Fill Full Form", 400));
   }
 
   let user = await User.findOne({ email });
 
   if (password !== confirmPassword) {
-    return next(
-      new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
-    );
+    return next(new ErrorHandler("Password & Confirm Password Do Not Match!", 400));
   }
 
   if (user) {
     return next(new ErrorHandler("User Already Registered!", 400));
   }
 
+  // Generate OTP and send email
+  const otp = generateOTP();
+  await sendOTPEmail(email, otp);
+
+  // Store OTP temporarily (could be in memory, cache, or database)
   user = await User.create({
     firstName,
     lastName,
@@ -56,10 +65,33 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
     gender,
     dob,
     role,
+    otp, // Store OTP for verification
   });
 
-  generateToken(user, "User Registered!", 200, res);
+  // Send OTP verification message to frontend
+  generateToken(user, "User Registered! Please Verify OTP.", 200, res);
 });
+
+// OTP verification route
+export const verifyOTP = catchAsyncErrors(async (req, res, next) => {
+  const { email, otp } = req.body;
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new ErrorHandler("User Not Found!", 404));
+  }
+
+  if (user.otp !== otp) {
+    return next(new ErrorHandler("Invalid OTP!", 400));
+  }
+
+  // OTP verified, you can now register the user
+  user.otp = ''; // Clear OTP after successful verification
+  await user.save();
+
+  generateToken(user, "User Verified and Registered!", 200, res);
+});
+
 
 //Patient Login
 

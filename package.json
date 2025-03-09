@@ -24,6 +24,8 @@
     "mongoose": "^8.5.2",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.4",
+    "otp-generator": "^4.0.1",
+    "razorpay": "^2.9.6",
     "render": "^0.1.4",
     "validator": "^13.12.0"
   }

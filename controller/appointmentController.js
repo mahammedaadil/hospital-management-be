@@ -4,6 +4,7 @@ import { Appointment } from "../models/appoinmentSchema.js";
 import { User } from "../models/userSchema.js";
 import moment from "moment";
 
+
 // Available time slots
 const availableTimeSlots = [
   "09:00-09:30", "09:30-10:00",
@@ -18,26 +19,22 @@ const availableTimeSlots = [
   "19:00-19:30", "19:30-20:00",
 ];
 // To Send Appointment
+// Assume Razorpay integration is already set up.
 
 export const postAppointment = catchAsyncErrors(async (req, res, next) => {
   const {
     firstName, lastName, email, phone, dob, gender,
     appointment_date, timeSlot, department,
-    doctor_firstName, doctor_lastName, hasVisited, address,
+    doctor_firstName, doctor_lastName, hasVisited, address, paymentMode,
   } = req.body;
 
   // Validate required fields
   if (
     !firstName || !lastName || !email || !phone || !dob ||
     !gender || !appointment_date || !timeSlot ||
-    !department || !doctor_firstName || !doctor_lastName || !address
+    !department || !doctor_firstName || !doctor_lastName || !address || !paymentMode
   ) {
     return next(new ErrorHandler("Please fill in all the required fields!", 400));
-  }
-
-  // Validate appointment date format
-  if (!moment(appointment_date, "YYYY-MM-DD", true).isValid()) {
-    return next(new ErrorHandler("Invalid appointment date format!", 400));
   }
 
   // Find doctor based on name and department
@@ -78,6 +75,15 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Sorry, this time slot is full.", 409));
   }
 
+  // Check for online payment if selected
+  if (paymentMode === "Pay Online") {
+    // Integrate Razorpay or any payment gateway logic here
+    const paymentSuccess = await processOnlinePayment(req.body);
+    if (!paymentSuccess) {
+      return next(new ErrorHandler("Payment failed. Please try again.", 400));
+    }
+  }
+
   // Assign a token number based on the current count
   const tokenNumber = existingAppointmentsCount + 1;
 
@@ -100,7 +106,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     address,
     doctorId,
     patientId,
-    status: 'Pending',
+    status: paymentMode === "Pay Online" ? 'Paid' : 'Pending', // Set status based on payment
     tokenNumber,  // Unique token for each time slot
   });
 
@@ -111,6 +117,19 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// Payment processing function
+async function processOnlinePayment(paymentDetails) {
+  // Process the payment using Razorpay API or any other payment gateway
+  // This function should return true if payment is successful and false otherwise
+  try {
+    // Razorpay API integration for payment verification
+    const razorpayPayment = await razorpay.paymentVerification(paymentDetails);
+    return razorpayPayment.status === 'success'; // Example of success status check
+  } catch (error) {
+    console.error("Payment error:", error);
+    return false;
+  }
+}
 
 
 
