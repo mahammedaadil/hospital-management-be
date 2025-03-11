@@ -20,19 +20,18 @@ const availableTimeSlots = [
 ];
 // To Send Appointment
 // Assume Razorpay integration is already set up.
-
 export const postAppointment = catchAsyncErrors(async (req, res, next) => {
   const {
     firstName, lastName, email, phone, dob, gender,
     appointment_date, timeSlot, department,
-    doctor_firstName, doctor_lastName, hasVisited, address, paymentMode,
+    doctor_firstName, doctor_lastName, hasVisited, address,
   } = req.body;
 
   // Validate required fields
   if (
     !firstName || !lastName || !email || !phone || !dob ||
     !gender || !appointment_date || !timeSlot ||
-    !department || !doctor_firstName || !doctor_lastName || !address || !paymentMode
+    !department || !doctor_firstName || !doctor_lastName || !address
   ) {
     return next(new ErrorHandler("Please fill in all the required fields!", 400));
   }
@@ -75,15 +74,6 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Sorry, this time slot is full.", 409));
   }
 
-  // Check for online payment if selected
-  if (paymentMode === "Pay Online") {
-    // Integrate Razorpay or any payment gateway logic here
-    const paymentSuccess = await processOnlinePayment(req.body);
-    if (!paymentSuccess) {
-      return next(new ErrorHandler("Payment failed. Please try again.", 400));
-    }
-  }
-
   // Assign a token number based on the current count
   const tokenNumber = existingAppointmentsCount + 1;
 
@@ -106,8 +96,7 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     address,
     doctorId,
     patientId,
-    status: paymentMode === "Pay Online" ? 'Paid' : 'Pending', // Set status based on payment
-    tokenNumber,  // Unique token for each time slot
+    tokenNumber, // Unique token for each time slot
   });
 
   res.status(200).json({
@@ -116,21 +105,6 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
     message: "Appointment booked successfully!",
   });
 });
-
-// Payment processing function
-async function processOnlinePayment(paymentDetails) {
-  // Process the payment using Razorpay API or any other payment gateway
-  // This function should return true if payment is successful and false otherwise
-  try {
-    // Razorpay API integration for payment verification
-    const razorpayPayment = await razorpay.paymentVerification(paymentDetails);
-    return razorpayPayment.status === 'success'; // Example of success status check
-  } catch (error) {
-    console.error("Payment error:", error);
-    return false;
-  }
-}
-
 
 
 // Get All Appointments (for admin or authorized users)

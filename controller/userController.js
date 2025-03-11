@@ -278,8 +278,16 @@ export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+
 export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
-  console.log('User Details:', req.user); // Debugging
+  // Ensure the user exists (for example, if not logged in, req.user might be null)
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'User not authenticated',
+    });
+  }
+  
   const user = req.user;
   res.status(200).json({
     success: true,
