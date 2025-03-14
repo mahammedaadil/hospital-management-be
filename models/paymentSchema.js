@@ -70,7 +70,20 @@ const paymentSchema = new mongoose.Schema({
     type: Date, 
     default: Date.now 
   },
-  
+   paymentStatus: {
+    type: String,
+    enum: ["Pending", "Paid", "Unpaid"],
+    default: "Pending",
+  },
+  paymentMode: {
+    type: String,
+    enum: ["Online", "Offline"],
+    default: "Offline",
+  },
+  stripePaymentId: {
+    type: String,
+    default: "",
+  },
 });
 
 export const Payment = mongoose.model("Payment", paymentSchema);

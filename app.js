@@ -10,8 +10,6 @@ import messageRouter from "./router/messageRouter.js";
 import userRouter from "./router/userRouter.js";
 import paymentRouter from "./router/paymentRouter.js";
 
-configDotenv();
-
 const app = express();
 
 console.log(process.env.FRONTEND_URL, process.env.DASHBOARD_URL,process.env.DOCTOR_URL);
