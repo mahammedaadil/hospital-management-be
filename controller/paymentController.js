@@ -12,30 +12,33 @@ const razorpay = new Razorpay({
 
 export const createOrder = async (req, res) => {
   try {
-    const { amount, userId, doctorId, appointmentId } = req.body;
-    
+    const { amount, currency } = req.body;
     const options = {
-      amount: amount * 100, // Razorpay works in paisa
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
+      amount,
+      currency,
+      receipt: "order_receipt_" + Date.now(),
     };
 
     const order = await razorpay.orders.create(options);
-    console.log("Razorpay Order Created:", order); // Add this line to log the created order
-    
-    res.status(200).json({ success: true, order });
+    res.json(order);
   } catch (error) {
-    console.error("Error creating order:", error); // Log the error to get more details
-    res.status(500).json({ success: false, message: "Failed to create order", error: error.message });
+    res.status(500).json({ message: "Failed to create order" });
   }
 };
 
-
 export const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, patientId, doctorId, appointmentId, amount } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      patientId,
+      doctorId,
+      appointmentId,
+      amount,
+    } = req.body;
 
-    console.log("Received data:", req.body); // Log received data for debugging
+   
 
     // Generate the signature for verification
     const generated_signature = crypto
@@ -43,15 +46,16 @@ export const verifyPayment = async (req, res) => {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    console.log("Generated Signature:", generated_signature); // Log generated signature
 
     // Verify the payment signature
     if (generated_signature !== razorpay_signature) {
-      console.log("Signature mismatch!");
-      return res.status(400).json({ success: false, message: "Payment verification failed" });
+
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment verification failed" });
     }
 
-    // Save payment details to the database if the payment is verified
+    // Save payment details to the database
     const payment = await Payment.create({
       patientId,
       doctorId,
@@ -63,10 +67,14 @@ export const verifyPayment = async (req, res) => {
       razorpayPaymentId: razorpay_payment_id,
     });
 
-    console.log("Payment successfully verified and stored:", payment); // Log payment success
     res.status(200).json({ success: true, message: "Payment verified successfully" });
   } catch (error) {
-    console.error("Error in payment verification:", error); // Log the error stack
-    res.status(500).json({ success: false, message: "Payment verification failed", error: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: "Payment verification failed",
+      error: error.message,
+    });
   }
 };
+

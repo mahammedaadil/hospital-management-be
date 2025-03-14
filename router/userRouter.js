@@ -43,6 +43,7 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPasswordController);
 router.post("/verify-otp", verifiedOtpController);
 router.put("/patient/update", isPatientAuthenticated, updateUserProfile);
+router.get("/doctor/:id", isPatientAuthenticated, getDoctorById);
 
 
 
