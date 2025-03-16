@@ -119,6 +119,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+
+  isConfirmed: { type: Boolean, default: false },
+  confirmationToken: { type: String },
+  confirmationTokenExpire: { type: Date },
 });
 
 // Hash password before saving if modified

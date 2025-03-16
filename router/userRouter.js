@@ -11,7 +11,8 @@ import {
   deleteDoctor,
   updateDoctor,
   getDoctorById,
-  updateUserProfile
+  updateUserProfile,
+  confirmEmail
   
 } from "../controller/userController.js";
 import {
@@ -25,7 +26,7 @@ import { resetPasswordController } from "../controller/resetPasswordController.j
 import { verifiedOtpController } from "../controller/verifyOtpController.js";
 
 const router = express.Router();
-
+router.get("/confirm-email/:token", confirmEmail);
 router.post("/patient/register", patientRegister);
 router.post("/login", login);
 router.post("/admin/addnew", isAdminAuthenticated, addNewAdmin);
