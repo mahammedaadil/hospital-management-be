@@ -114,8 +114,7 @@ export const confirmEmail = catchAsyncErrors(async (req, res, next) => {
 
   // 🔹 Confirm email & remove token
   user.isConfirmed = true;
-  user.confirmationToken = null;
-  user.confirmationTokenExpire = null;
+  
 
   await user.save({ validateBeforeSave: false });
 

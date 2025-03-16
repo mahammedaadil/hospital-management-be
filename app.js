@@ -13,7 +13,6 @@ import paymentRouter from "./router/paymentRouter.js";
 const app = express();
 
 
-
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL,process.env.DOCTOR_URL],
