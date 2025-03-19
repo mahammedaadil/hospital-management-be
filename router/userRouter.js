@@ -12,7 +12,8 @@ import {
   updateDoctor,
   getDoctorById,
   updateUserProfile,
-  confirmEmail
+  confirmEmail,
+  adminLogin
   
 } from "../controller/userController.js";
 import {
@@ -29,6 +30,7 @@ const router = express.Router();
 router.get("/confirm-email/:token", confirmEmail);
 router.post("/patient/register", patientRegister);
 router.post("/login", login);
+router.post("/loginadmin",adminLogin)
 router.post("/admin/addnew", isAdminAuthenticated, addNewAdmin);
 router.get("/doctors", getAllDoctors);
 router.get("/admin/me",isAdminAuthenticated,getUserDetails);

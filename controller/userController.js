@@ -3,7 +3,6 @@ import { User } from "../models/userSchema.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { generateToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
-import nodemailer from 'nodemailer';
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import sendEmail from "./sendEmail.js";
@@ -210,6 +209,35 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
     admin,
   });
 });
+
+
+//admin login
+export const adminLogin = catchAsyncErrors(async (req, res, next) => {
+  const { email, password, role } = req.body;
+  if (!email || !password || !role) {
+    return next(new ErrorHandler("Please Fill Full Form!", 400));
+  }
+  
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
+  }
+
+
+  const isPasswordMatch = await user.comparePassword(password);
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
+  }
+  if (role !== user.role) {
+    return next(new ErrorHandler(`User Not Found With This Role!`, 400));
+  }
+ 
+  generateToken(user,"User Login SuccessFully!",200,res)
+
+});
+
+
 
 //Doctor Registration & Getting Doctor Details
 export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
