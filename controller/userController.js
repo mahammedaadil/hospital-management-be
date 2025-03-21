@@ -56,10 +56,30 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
   // 🔹 Send confirmation email
   const confirmLink = `${process.env.FRONTEND_URL}/confirm-email/${confirmationToken}`;
   const message = `
-    <h2>Hello ${firstName},</h2>
-    <p>Thank you for registering. Please click the link below to confirm your email:</p>
-    <a href="${confirmLink}" style="padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">Confirm Email</a>
-    <p>This link will expire in 24 hours.</p>
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+      <h2 style="color: #271776; text-align: center;">AadiCare - Email Confirmation</h2>
+      
+      <p>Hello <strong>${firstName}</strong>,</p>
+      
+      <p>Thank you for registering with AadiCare. Please confirm your email by clicking the button below:</p>
+      
+      <div style="text-align: center; margin: 20px 0;">
+        <a href="${confirmLink}" style="padding: 12px 24px; background-color: #28a745; color: #fff; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
+          Confirm Email
+        </a>
+      </div>
+
+      <p>This link is valid for 24 hours.</p>
+
+      <p>If you need further assistance, contact <a href="mailto:support@aadicare.com">support@aadicare.com</a>.</p>
+
+      <p style="text-align: center;">AadiCare - Your Health, Our Priority</p>
+    </div>
+  </body>
+</html>
+
   `;
 
   try {
@@ -149,7 +169,7 @@ export const login = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid Email or Password", 400));
   }
 
-  generateToken(user, "User Logged-In Successfully", 200, res);
+  generateToken(user, "User Login Successfully", 200, res);
 });
 
 
@@ -233,7 +253,7 @@ export const adminLogin = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(`User Not Found With This Role!`, 400));
   }
  
-  generateToken(user,"User Login SuccessFully!",200,res)
+  generateToken(user,"Admin Login SuccessFully!",200,res)
 
 });
 
