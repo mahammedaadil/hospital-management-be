@@ -354,8 +354,41 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
 
 
 
+export const doctorLogin = catchAsyncErrors(async (req, res, next) => {
+  const { email, password, role } = req.body;
+  if (!email || !password || !role) {
+    return next(new ErrorHandler("Please Fill Full Form!", 400));
+  }
+  
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
+  }
+
+
+  const isPasswordMatch = await user.comparePassword(password);
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
+  }
+  if (role !== user.role) {
+    return next(new ErrorHandler(`User Not Found With This Role!`, 400));
+  }
+ 
+  generateToken(user,"Doctor Login SuccessFully!",200,res)
+
+});
+
+
 export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
-  const doctors = await User.find({ role: "Doctor" });
+  const doctors = await User.find({ 
+    role: "Doctor",
+    $or: [
+      { isActive: true },
+      { isActive: { $exists: false } } // Include docs where field doesn't exist
+    ]
+  });
+  
   res.status(200).json({
     success: true,
     doctors,
@@ -452,29 +485,40 @@ const isValidObjectId = (id) => {
   return /^[0-9a-fA-F]{24}$/.test(id);
 };
 
-//delete doctor
+//active ,deactivate doctor
 
-
-export const deleteDoctor = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req.params;
-
-  const doctor = await User.findById(id);
-  if (!doctor || doctor.role !== "Doctor") {
-    return next(new ErrorHandler("Doctor Not Found!", 404));
+export const activateDoctor = async (req, res) => {
+  try {
+    const doctor = await User.findByIdAndUpdate(
+      req.params.id,
+      { isActive: true },
+      { new: true }
+    );
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+    res.status(200).json({ success: true, doctor });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
+};
 
-  
-  if (doctor.docAvatar && doctor.docAvatar.public_id) {
-    await cloudinary.uploader.destroy(doctor.docAvatar.public_id);
+export const deactivateDoctor = async (req, res) => {
+  try {
+    const doctor = await User.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true }
+    );
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+    res.status(200).json({ success: true, doctor });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
+};
 
-  await User.findByIdAndDelete(id);
-
-  res.status(200).json({
-    success: true,
-    message: "Doctor Deleted Successfully!",
-  });
-});
 
 //update doctor
 
@@ -552,3 +596,6 @@ export const updateUserProfile = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
+
+

@@ -25,7 +25,7 @@ router.get("/backup", (req, res) => {
 
     output.on("close", () => {
         console.log(`Backup created: ${backupPath}`);
-        res.json({ success: true, message: "Backup created successfully", file: backupFilename });
+        res.json({ success: true, message: "Backup created successfully,Backup Path:D:/Backup ", file: backupFilename });
     });
 
     archive.on("error", (err) => res.status(500).json({ success: false, error: err.message }));
